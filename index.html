@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Libertad Avanza - App Electoral BA</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="description" content="Aplicación electoral oficial de La Libertad Avanza para la provincia de Buenos Aires">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="LLA Electoral">
+    
+    <!-- Chart.js for admin statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container" id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen hidden">
+            <div class="page-title party-title">Cargando...</div>
+        </div>
+
+        <!-- Login/Register Screen -->
+        <div id="auth-screen" class="page">
+            <div class="header party-header">
+                <div class="header-title">
+                    <span class="party-logo-text">LLA</span>
+                    <span style="margin-left: 10px;">La Libertad Avanza BA</span>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="login-container">
+                    <!-- Login Form -->
+                    <div id="login-form" class="auth-form">
+                        <div class="page-title party-title" id="auth-title">Iniciar Sesión</div>
+                        
+                        <div id="error-message" class="error-message hidden"></div>
+
+                        <form id="auth-form-element" class="login-form">
+                            <div class="form-group">
+                                <div class="form-field">
+                                    <label class="form-label">Usuario</label>
+                                    <input type="text" id="username" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <!-- Registration fields (hidden by default) -->
+                            <div id="register-fields" class="hidden">
+                                <div class="form-group">
+                                    <div class="form-field">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" id="email" class="form-input">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-field">
+                                        <label class="form-label">Nombre</label>
+                                        <input type="text" id="first_name" class="form-input">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-field">
+                                        <label class="form-label">Apellido</label>
+                                        <input type="text" id="last_name" class="form-input">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-field">
+                                        <label class="form-label">Teléfono (opcional)</label>
+                                        <input type="tel" id="phone" class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-field">
+                                    <label class="form-label">Contraseña</label>
+                                    <input type="password" id="password" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" id="auth-submit-btn" class="primary-button">
+                                    Iniciar Sesión
+                                </button>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="button" id="toggle-auth" class="secondary-button">
+                                    ¿No tienes cuenta? Regístrate
+                                </button>
+                            </div>
+
+                            <div id="recovery-link-container" class="form-group">
+                                <button type="button" id="show-recovery" class="recovery-link">
+                                    ¿Olvidaste tu contraseña?
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Password Recovery Form -->
+                    <div id="recovery-form" class="auth-form hidden">
+                        <div class="page-title">Recuperar Contraseña</div>
+                        <form id="recovery-form-element">
+                            <div class="form-group">
+                                <div class="form-field">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="recovery-email" class="form-input" placeholder="Ingresa tu email registrado" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="primary-button">
+                                    Enviar Enlace de Recuperación
+                                </button>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="button" id="back-to-login" class="secondary-button">
+                                    Volver al Login
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="footer">
+                        <div class="party-logo">
+                            <span>¡VIVA LA LIBERTAD!</span>
+                        </div>
+                        <div class="copyright">
+                            © 2025 La Libertad Avanza - Provincia de Buenos Aires<br>
+                            Hecho por Roberto Lencina - Derecho de Autor
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="main-app" class="page hidden">
+            <div class="header party-header">
+                <div class="header-title">
+                    <span class="party-logo-text">LLA</span>
+                    <span style="margin-left: 10px;">La Libertad Avanza BA</span>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="page-content">
+                <div class="container">
+                    <div class="profile-container">
+                        <div class="page-title">Mi Perfil</div>
+                        
+                        <div class="profile-card">
+                            <div class="user-avatar" id="user-avatar">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                            </div>
+                            
+                            <div class="user-info">
+                                <div class="user-name" id="user-display-name">Usuario</div>
+                                <div class="user-description" id="user-username">@usuario</div>
+                                <div class="user-description" id="user-email">email@ejemplo.com</div>
+                                <div class="user-description" id="user-section" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <div id="user-actions" class="quick-actions">
+                            <button class="action-btn" onclick="openCamera()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5M17 3H7V1H17V3M18 5H6C4.89 5 4 5.89 4 7V19C4 20.11 4.89 21 6 21H18C19.11 21 20 20.11 20 19V7C20 5.89 19.11 5 18 5Z"/>
+                                </svg>
+                                Tomar Foto
+                            </button>
+
+                            <button class="action-btn emergency" onclick="showEmergencyForm()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>
+                                </svg>
+                                Emergencia
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="secondary-button" onclick="logout()">
+                                Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Form -->
+            <div id="emergency-page" class="page-content hidden">
+                <div class="container">
+                    <div class="header">
+                        <button class="back-button" onclick="showProfile()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+                            </svg>
+                        </button>
+                        <div class="header-title">Mensaje de Emergencia</div>
+                    </div>
+
+                    <form id="emergency-form" class="emergency-form">
+                        <div class="form-group">
+                            <label class="form-label">Describe la emergencia</label>
+                            <textarea id="emergency-message" class="form-input" rows="4" placeholder="Describe la situación de emergencia..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Foto (opcional)</label>
+                            <input type="file" id="emergency-photo" accept="image/*" capture="camera">
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="primary-button emergency">
+                                Enviar Emergencia
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Messages Page -->
+            <div id="messages-page" class="page-content hidden">
+                <div class="container">
+                    <div class="page-title">Mensajes de Emergencia</div>
+                    <div id="messages-list" class="message-list">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="admin-page" class="page-content hidden">
+                <div class="container">
+                    <div class="admin-dashboard">
+                        <div class="page-title party-title">Panel de Administración</div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card party-theme">
+                                <h3>Usuarios Total</h3>
+                                <p id="total-users">0</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Emergencias</h3>
+                                <p id="pending-emergencies">0</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Reportes</h3>
+                                <p id="total-reports">0</p>
+                            </div>
+                        </div>
+
+                        <div class="admin-section">
+                            <h3 class="party-title">Estadísticas por Sección</h3>
+                            <div id="sections-grid" class="sections-grid">
+                                <!-- Section stats will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="admin-section">
+                            <h3 class="party-title">Usuarios Registrados</h3>
+                            <div class="admin-actions">
+                                <button onclick="loadUsers()">Actualizar</button>
+                                <button onclick="exportToPDF()">Exportar PDF</button>
+                            </div>
+
+                            <div id="users-list" class="user-list">
+                                <!-- Users will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="admin-section">
+                            <h3 class="party-title">Mensajes de Emergencia</h3>
+                            <div id="admin-messages-list" class="message-list">
+                                <!-- Messages will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Access Page -->
+            <div id="access-page" class="page-content hidden">
+                <div class="container">
+                    <div class="access-container">
+                        <div class="page-title">Acceso Especial</div>
+
+                        <div class="section-card">
+                            <h3>Acceso a Sección Electoral</h3>
+                            <form id="electoral-access-form">
+                                <div class="form-group">
+                                    <label class="form-label">Sección</label>
+                                    <select id="electoral-section" class="form-input">
+                                        <option value="1">Sección 1</option>
+                                        <option value="2">Sección 2</option>
+                                        <option value="3">Sección 3</option>
+                                        <option value="4">Sección 4</option>
+                                        <option value="5">Sección 5</option>
+                                        <option value="6">Sección 6</option>
+                                        <option value="7">Sección 7</option>
+                                        <option value="8">Sección 8</option>
+                                        <option value="9">Sección 9</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Código de Acceso</label>
+                                    <input type="password" id="electoral-code" class="form-input" placeholder="Ingresa el código de la sección" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="primary-button">
+                                        Acceder a Sección
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="section-card">
+                            <h3>Acceso de Administrador</h3>
+                            <form id="admin-access-form">
+                                <div class="form-group">
+                                    <label class="form-label">Código de Administrador</label>
+                                    <input type="password" id="admin-code" class="form-input" placeholder="Ingresa el código de administrador" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="primary-button">
+                                        Acceder como Administrador
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation" id="main-navigation">
+                <button class="nav-item active" onclick="showPage('profile')">
+                    <div class="nav-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-label">Perfil</div>
+                </button>
+
+                <button class="nav-item" id="nav-messages" onclick="showPage('messages')" style="display: none;">
+                    <div class="nav-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-label">Mensajes</div>
+                </button>
+
+                <button class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display: none;">
+                    <div class="nav-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-label">Admin</div>
+                </button>
+
+                <button class="nav-item" onclick="showPage('access')">
+                    <div class="nav-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-label">Acceso</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Camera Modal -->
+        <div id="camera-modal" class="camera-modal hidden">
+            <div class="camera-preview">
+                <video id="camera-video" autoplay playsinline></video>
+                <canvas id="camera-canvas" style="display: none;"></canvas>
+            </div>
+            <div class="camera-controls">
+                <button class="capture-btn" onclick="capturePhoto()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5z"/>
+                    </svg>
+                </button>
+            </div>
+            <button class="close-btn" onclick="closeCamera()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Hidden file input for photo uploads -->
+        <input type="file" id="hidden-file-input" accept="image/*" capture="camera" style="display: none;">
+    </div>
+
+    <!-- JavaScript -->
+    <script src="javascript.js"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
