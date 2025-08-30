@@ -1,0 +1,2 @@
+# apppolitica
+Politica de LLA
